@@ -90,9 +90,9 @@ def Production(topology,system,temperature,checkpoint,bead,step_write_interval=1
     if slurm == False:
         platform = Platform.getPlatformByName("CUDA")
         properties = {"CudaPrecision":"mixed"}
-        sim = Simulation(prmtop.topology, system, thermostat,platform,properties)
+        sim = Simulation(topology, system, thermostat,platform,properties)
     elif slurm == True:
-        sim = Simulation(prmtop.topology, system, thermostat)
+        sim = Simulation(topology, system, thermostat)
     sim.context.getState(getPositions=True,enforcePeriodicBox=True).getPositions()
     sim.reporters.append(StateDataReporter("temp.out",step_write_interval,step=True,time=True,potentialEnergy=True,
                          kineticEnergy=True,totalEnergy=True,temperature=True,volume=True,density=True))

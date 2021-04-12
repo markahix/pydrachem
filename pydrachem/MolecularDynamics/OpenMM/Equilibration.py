@@ -202,13 +202,13 @@ def Relax_System(topology,system,index_array,temperature,checkpoint,bead,force_c
     system.removeForce(force_index)
     Freeze_Atoms(system,index_array,positions,force_constant)
     
-    thermostat = LangevinIntegrator(temperature*kelvin,1/picoseconds,0.001*picoseconds)
+    thermostat = LangevinIntegrator(temperature*kelvin,1/picoseconds,0.001*picoseconds) # pylint: disable=undefined-variable
     if slurm == False:
         platform = Platform.getPlatformByName("CUDA")
         properties = {"CudaPrecision":"mixed"}
-        sim = Simulation(prmtop.topology, system, thermostat,platform,properties)
+        sim = Simulation(topology, system, thermostat,platform,properties)
     elif slurm == True:
-        sim = Simulation(prmtop.topology, system, thermostat)
+        sim = Simulation(topology, system, thermostat)
     sim.context.getState(getPositions=True,enforcePeriodicBox=True).getPositions()
     sim.reporters.append(StateDataReporter("temp.out",step_write_interval,step=True,time=True,potentialEnergy=True,
                          kineticEnergy=True,totalEnergy=True,temperature=True,volume=True,density=True))
@@ -255,7 +255,7 @@ def Specific_Restraint_File(system,prm_info,filename):
 def Run_Equilibration(prmtopfile,inpcrdfile,frozen_mask,temperature,Restraint_Force,step_write_interval,restraint_file=None,slurm=False):
     prmtop, inpcrd, system, thermostat = Initialize_System(prmtopfile, inpcrdfile, temperature)
     index_array = parmed.amber.AmberMask(parmed.load_file(prmtopfile),frozen_mask).Selection()
-    original_atom_masses = Get_Original_Atom_Masses(system,index_array)
+    # original_atom_masses = Get_Original_Atom_Masses(system,index_array)
     positions = inpcrd.getPositions(asNumpy=True)
     prm_info = parmed.amber.AmberParm(prmtopfile)
     if restraint_file != None:
