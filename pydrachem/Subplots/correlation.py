@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import glob
 import numpy as np
-def correlation(corrfile,ax=None,colormap="viridis"):
+def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement"):
     """
     matplotlib-based function to put correlation matrix plots into subplots.
     Parameters
@@ -30,8 +30,8 @@ def correlation(corrfile,ax=None,colormap="viridis"):
         data = corrfile
     dims = data.shape[0]
     X, Y = np.mgrid[0:dims:complex(0, dims), 0:dims:complex(0, dims)]
-    ax.set_title("Correlated Movement")
-    im = ax.pcolormesh(X,Y,data,cmap="RdBu",vmin=-1.,vmax=1.)
+    ax.set_title(title)
+    im = ax.pcolormesh(X,Y,data,cmap=colormap,vmin=-1.,vmax=1.)
     plt.colorbar(im,ticks=[-1,0,1],ax=ax)
     plt.gca().xaxis.tick_bottom()
     plt.xticks(rotation=90)

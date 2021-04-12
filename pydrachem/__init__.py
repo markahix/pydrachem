@@ -7,6 +7,7 @@ Python package to streamline figure generation for systems
 from .pydrachem import *
 from .Subplots import *
 from .Parsers import *
+from .Chimera import *
 import matplotlib.pyplot as plt
 # Handle versioneer
 from ._version import get_versions

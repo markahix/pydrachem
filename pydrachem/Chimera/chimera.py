@@ -1,3 +1,8 @@
+import matplotlib.cm as cm
+import numpy as np
+import os
+
+
 def attribute_to_residues(array,filename,attribute,description,matchmode="1-to-1",recipient="residues"):
     """
     Writes an array of values to a chimera-formatted attribute file to allow users to color
@@ -49,10 +54,10 @@ def Chimera_attribute_color_string(hex_map,value_array):
 
 def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_movie=False,
                           colormap="viridis",hide_atom_mask=":1-10000",keep_files=True,
-                          value_max=1,value_min=-1,quality=0):
+                          value_max=1,value_min=-1,quality=0,extra_commands=""):
     ### Adjust parameters based on quality variable, 0 is default for testing, 
     ### 1-3 for larger images, 2 and 3 use raytracing 
-    if quality>3:
+    if quality>4:
         quality=3
     windowsize = ["640 480","800 600","1024 768","2590 1920","2000 2000"]
     supersample = quality+1
@@ -72,18 +77,19 @@ def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_mo
     chi_com_file=open(f"{image_base}.com","w+")
     chi_com_file.write(f"open {pdbfile}\n")                                               #open the pdb file.
     chi_com_file.write(f"windowsize {windowsize[quality]}\n")                                  #sets windowsize to 800x600.
-    chi_com_file.write(f"background solid white\n")                                     #background to white.
-    chi_com_file.write(f"~nucleotides\n")                                      # turn off nucleotide objects.
+    chi_com_file.write("background solid white\n")                                     #background to white.
+    chi_com_file.write("color white\n")
+    chi_com_file.write("~nucleotides\n")                                      # turn off nucleotide objects.
     chi_com_file.write(f"~display {hide_atom_mask}\n")                               #hide atoms in the mask.
     chi_com_file.write(f"defattr {image_base}.dat\n")         #define the attribute from the given data file.
     chi_com_file.write(f"rangecolor temp_att {attr_color_string}\n") #apply the color scale to the attribute.
-    chi_com_file.write(f"colorkey 0.96,0.05 0.99,0.25 labelSide ")    #puts the colorbar at the bottom right.
+    chi_com_file.write(f"colorkey 0.97,0.05 0.99,0.25 labelSide ")    #puts the colorbar at the bottom right.
     chi_com_file.write(f"left/top labelColor black justification right {colorbar_string}\n")
-    chi_com_file.write("~set depthCue\nwindow\n")
-
+    chi_com_file.write("~set depthCue\n")
+    chi_com_file.write(f"{extra_commands}\n") #any additional user-provided visualizations.
     if make_movie == False: ### Do the rotation snapshots only if the user doesn't want a rotation movie.
         for i in range(number_of_rotations):
-            chi_com_file.write(f"copy file {image_base}{i+1}.png png supersample ")
+            chi_com_file.write(f"window\ncopy file {image_base}{i+1}.png png supersample ")
             chi_com_file.write(f"{supersample} {image_raytrace[quality]}\nturn y {360/number_of_rotations}\nwait\n")
 
     elif make_movie == True: ### Make a movie of the rotation.

@@ -78,9 +78,9 @@ def plot_PCA_from_NMD(filename,ax=None,title="",plot_range=None,colormap="viridi
     x = data[0,2] * data[0,3:]
     y = data[1,2] * data[1,3:]
     z = -(-x**2 - y**2)
-    ax.set_title(title,fontsize=18)
-    ax.set_xlabel("Mode 1",fontsize=16)
-    ax.set_ylabel("Mode 2",fontsize=16)
+    ax.set_title(title)
+    ax.set_xlabel("Mode 1")
+    ax.set_ylabel("Mode 2")
     if plot_range != None:
         ax.set_xlim( -1*plot_range,plot_range)
         ax.set_ylim( -1*plot_range,plot_range)
