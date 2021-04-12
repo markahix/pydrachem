@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
@@ -7,9 +6,9 @@ from simtk.openmm import app
 import os
 import numpy as np
 import sys
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import math
-#from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter
 import parmed
 
 
@@ -27,12 +26,12 @@ def Initialize_System(prmtopfile,inpcrdfile,temperature):
     prmtop = app.AmberPrmtopFile(prmtopfile)
     inpcrd = app.AmberInpcrdFile(inpcrdfile)
     system = prmtop.createSystem(nonbondedMethod = app.PME,
-        nonbondedCutoff = 1.0*nanometers,
+        nonbondedCutoff = 1.0*nanometers, # pylint: disable=undefined-variable
         constraints = app.HBonds,
         ewaldErrorTolerance = 0.001,
         rigidWater = False,
         removeCMMotion = True)
-    thermostat = LangevinIntegrator(float(temperature)*kelvin, 1/picoseconds, 0.001*picoseconds)
+    thermostat = LangevinIntegrator(float(temperature)*kelvin, 1/picoseconds, 0.001*picoseconds)# pylint: disable=undefined-variable
     barostat = MonteCarloBarostat(1.0*atmosphere, float(temperature)*kelvin, 25)
     system.addForce(barostat)
     return prmtop,inpcrd,system,thermostat
@@ -104,8 +103,7 @@ def Check_Convergence(logfile,tolerance=0.01,history_to_check=100):
     else:
         return False
 
-
-'''def Test_State_File(statefile,outname):
+def Test_State_File(statefile,outname):
     Output_Cleanup(statefile)
     test = np.genfromtxt(statefile, names = True, delimiter=',')
     colnames = test.dtype.names[2:]
@@ -128,7 +126,7 @@ def Check_Convergence(logfile,tolerance=0.01,history_to_check=100):
     fig.subplots_adjust(hspace=0.3)
     fig.savefig(outname,dpi=300)
     return
-'''
+
 def amber_selection_to_atomidx(structure, selection):
     """
     Converts AmberMask selection [amber-syntax]_ to list of atom indices.
@@ -254,39 +252,21 @@ def Specific_Restraint_File(system,prm_info,filename):
             print("Added distance restraint ("+str(row[2])+" Angstroms) of "+str(rest_weight)+"kcal between "+str(row[0])+" and "+str(row[1]))
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 6:
-        slurm = False
-        prmtopfile = sys.argv[1]
-        inpcrdfile = sys.argv[2]
-        frozen_mask = sys.argv[3]
-        temperature = float(sys.argv[4])
-        Restraint_Force = float(sys.argv[5])
-        step_write_interval = int(sys.argv[6])
-        if len(sys.argv) > 7:
-            restraint_file=sys.argv[7]
-        if len(sys.argv) > 8:
-            slurm = True
-
-        prmtop, inpcrd, system, thermostat = Initialize_System(prmtopfile, inpcrdfile, temperature)
-        index_array = parmed.amber.AmberMask(parmed.load_file(prmtopfile),frozen_mask).Selection()
-        original_atom_masses = Get_Original_Atom_Masses(system,index_array)
-        positions = inpcrd.getPositions(asNumpy=True)
-        prm_info = parmed.amber.AmberParm(prmtopfile)
-        if len(sys.argv) > 7:
-            Specific_Restraint_File(system,prm_info,sys.argv[7])
-
-        force_index = Freeze_Atoms(system,index_array,positions,Restraint_Force)
-        Minimize_Simulation(prmtop,inpcrd,system,thermostat,step_write_interval,slurm)
-        bead = 1
-        while Restraint_Force > 0.1:
-            Restraint_Force = Restraint_Force*.5
-            checkpoint = "temp_"+str(bead-1)+".chk"
-            Relax_System(prmtop.topology,system,index_array,temperature,
-                                 checkpoint,bead,Restraint_Force,force_index,step_write_interval,slurm)
-            bead = bead+1
-            print("Completed Relaxation at " + str(Restraint_Force)+".")
-
-   #     Test_State_File("output.log","Relax_Restraints_Test.png")
-    else:
-        print("Syntax Error:  Expected 6 arguments\n\nEquilibration.py <.prmtop> <.inpcrd> <frozen mask> <temperature> <starting restraint> <timesteps to save>[<system_specific_restraints_file> <SLURM>]\n")
+def Run_Equilibration(prmtopfile,inpcrdfile,frozen_mask,temperature,Restraint_Force,step_write_interval,restraint_file=None,slurm=False):
+    prmtop, inpcrd, system, thermostat = Initialize_System(prmtopfile, inpcrdfile, temperature)
+    index_array = parmed.amber.AmberMask(parmed.load_file(prmtopfile),frozen_mask).Selection()
+    original_atom_masses = Get_Original_Atom_Masses(system,index_array)
+    positions = inpcrd.getPositions(asNumpy=True)
+    prm_info = parmed.amber.AmberParm(prmtopfile)
+    if restraint_file != None:
+        Specific_Restraint_File(system,prm_info,sys.argv[7])
+    force_index = Freeze_Atoms(system,index_array,positions,Restraint_Force)
+    Minimize_Simulation(prmtop,inpcrd,system,thermostat,step_write_interval,slurm)
+    bead = 1
+    while Restraint_Force > 0.1:
+        Restraint_Force = Restraint_Force*.5
+        checkpoint = "temp_"+str(bead-1)+".chk"
+        Relax_System(prmtop.topology,system,index_array,temperature,
+                                checkpoint,bead,Restraint_Force,force_index,step_write_interval,slurm)
+        bead = bead+1
+        print("Completed Relaxation at " + str(Restraint_Force)+".")

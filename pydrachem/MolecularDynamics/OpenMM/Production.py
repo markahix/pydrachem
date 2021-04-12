@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
@@ -27,12 +26,12 @@ def Initialize_System(prmtopfile,inpcrdfile,temperature):
     prmtop = app.AmberPrmtopFile(prmtopfile)
     inpcrd = app.AmberInpcrdFile(inpcrdfile)
     system = prmtop.createSystem(nonbondedMethod = app.PME,
-        nonbondedCutoff = 1.0*nanometers,
+        nonbondedCutoff = 1.0*nanometers, # pylint: disable=undefined-variable
         constraints = app.HBonds,
         ewaldErrorTolerance = 0.001,
         rigidWater = False,
         removeCMMotion = True)
-    thermostat = LangevinIntegrator(float(temperature)*kelvin, 1/picoseconds, 0.001*picoseconds)
+    thermostat = LangevinIntegrator(float(temperature)*kelvin, 1/picoseconds, 0.001*picoseconds)# pylint: disable=undefined-variable
     barostat = MonteCarloBarostat(1.0*atmosphere, float(temperature)*kelvin, 25)
     system.addForce(barostat)
     return prmtop,inpcrd,system,thermostat
@@ -87,7 +86,7 @@ def amber_selection_to_atomidx(structure, selection):
     return mask_idx
 
 def Production(topology,system,temperature,checkpoint,bead,step_write_interval=10000,slurm=False):
-    thermostat = LangevinIntegrator(temperature*kelvin,1/picoseconds,0.001*picoseconds)
+    thermostat = LangevinIntegrator(temperature*kelvin,1/picoseconds,0.001*picoseconds)# pylint: disable=undefined-variable
     if slurm == False:
         platform = Platform.getPlatformByName("CUDA")
         properties = {"CudaPrecision":"mixed"}
@@ -132,33 +131,15 @@ def Specific_Restraint_File(system,prm_info,filename):
             print("Added distance restraint ("+str(row[2])+" Angstroms) of "+str(rest_weight)+"kcal between "+str(row[0])+" and "+str(row[1]))
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 6:
-        slurm = False
-        prmtopfile = sys.argv[1]
-        inpcrdfile = sys.argv[2]
-        restart = sys.argv[3]
-        temperature = float(sys.argv[4])
-        Start_Bead = int(sys.argv[5])
-        Number_of_Steps = float(sys.argv[6])
-        if len(sys.argv) > 7:
-            restraint_file=sys.argv[7]
-        if len(sys.argv) > 8:
-            slurm = True
-
-        prmtop, inpcrd, system, thermostat = Initialize_System(prmtopfile, inpcrdfile, temperature)
-        prm_info = parmed.amber.AmberParm(prmtopfile)
-        if len(sys.argv) > 7:
-            Specific_Restraint_File(system,prm_info,restraint_file)
-
-        Production(prmtop.topology,system,temperature,restart,Start_Bead,10000,slurm)
-        bead = Start_Bead + 1
-        while bead <  Number_of_Steps:
-            checkpoint = "prod_"+str(bead-1)+".chk"
-            Production(prmtop.topology,system,temperature,checkpoint,bead,10000,slurm)
-            bead = bead+1
-            print("Completed Production Step "+str(bead))
-
-   #    Test_State_File("output.log","Relax_Restraints_Test.png")
-    else:
-        print("Syntax Error:  Expected 6 arguments\n\nEquilibration.py <.prmtop> <.inpcrd> <.chk> <temperature> <Start Bead> <Duration (ns)>\n")
+def Run_Production(prmtopfile,inpcrdfile,restart,temperature,Start_Bead,Number_of_Steps,restraint_file=None,slurm = False):
+    prmtop, inpcrd, system, thermostat = Initialize_System(prmtopfile, inpcrdfile, temperature)
+    prm_info = parmed.amber.AmberParm(prmtopfile)
+    if restraint_file != None:
+        Specific_Restraint_File(system,prm_info,restraint_file)
+    Production(prmtop.topology,system,temperature,restart,Start_Bead,10000,slurm)
+    bead = Start_Bead + 1
+    while bead < Number_of_Steps:
+        checkpoint = "prod_"+str(bead-1)+".chk"
+        Production(prmtop.topology,system,temperature,checkpoint,bead,10000,slurm)
+        bead = bead+1
+        print("Completed Production Step "+str(bead))
