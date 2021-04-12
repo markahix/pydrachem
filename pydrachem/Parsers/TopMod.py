@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 
 def pmout_parser(filename):
     """
@@ -136,7 +136,7 @@ def multiframes_to_excel(dfs,sheets,filename):
     if type(filename) != str:
         print("Type Error:  'filename' must be a string for an output filename.")
         return
-    excel = pandas.ExcelWriter(filename, engine='xlsxwriter')
+    excel = pd.ExcelWriter(filename, engine='xlsxwriter') # pylint: disable=abstract-class-instantiated
     for i in range(len(dfs)):
         dfs[i].to_excel(excel,sheet_name=sheets[i],index=False)
     excel.save()
