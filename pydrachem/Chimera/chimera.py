@@ -52,6 +52,35 @@ def Chimera_attribute_color_string(hex_map,value_array):
     colorbar_string = " ".join(x for x in colorbar_array)    
     return attr_color_string,colorbar_string
 
+def Chimera_Compare(pdbs:list,
+                    align_mask:str,
+                    orientation_masks: list,
+                    image_file: str):
+    hexmap = fragment_map_to_hex("jet",len(pdbs))
+    chicom = open("compare.com","w+")
+    for i in range(len(pdbs)):
+        chicom.write(f" open {pdbs[i]}\n")
+    chicom.write("windowsize 2590 1920\n")
+    for i in range(1,len(pdbs)):
+        chicom.write(f"matchmaker #0{align_mask} #{i}{align_mask}\n")
+    chicom.write("~display\n")
+    chicom.write(f"background solid white\n")
+    for i in range(len(pdbs)):
+        chicom.write(f"color {hexmap[i]} #{i}\n")
+    chicom.write(f"color grey")
+    for i in range(len(pdbs)):
+        chicom.write(f" #{i}{align_mask}")
+    chicom.write("\n")
+    chicom.write(f"align #0{orientation_masks[0]} #0{orientation_masks[1]}\n")
+    chicom.write("turn y 90\n")
+    chicom.write(f"window\n")
+    chicom.write(f"copy file {image_file} png supersample 3 raytrace rtwait rtclean\n")
+    chicom.write("stop\n")
+    chicom.close()
+    shell("chimera --gui compare.com")
+    shell("rm compare.com")
+
+
 def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_movie=False,
                           colormap="viridis",hide_atom_mask=":1-10000",keep_files=True,
                           value_max=1,value_min=-1,quality=0,extra_commands=""):
