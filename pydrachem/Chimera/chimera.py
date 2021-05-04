@@ -77,8 +77,7 @@ def Chimera_Compare(pdbs:list,
     chicom.write(f"copy file {image_file} png supersample 3 raytrace rtwait rtclean\n")
     chicom.write("stop\n")
     chicom.close()
-    shell("chimera --gui compare.com")
-    shell("rm compare.com")
+    os.system("chimera --gui compare.com; rm compare.com")
 
 
 def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_movie=False,
@@ -117,9 +116,13 @@ def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_mo
     chi_com_file.write("~set depthCue\n")
     chi_com_file.write(f"{extra_commands}\n") #any additional user-provided visualizations.
     if make_movie == False: ### Do the rotation snapshots only if the user doesn't want a rotation movie.
-        for i in range(number_of_rotations):
-            chi_com_file.write(f"window\ncopy file {image_base}{i+1}.png png supersample ")
-            chi_com_file.write(f"{supersample} {image_raytrace[quality]}\nturn y {360/number_of_rotations}\nwait\n")
+        if number_of_rotations == 1:
+            chi_com_file.write(f"window\ncopy file {image_base}.png png supersample ")
+            chi_com_file.write(f"{supersample} {image_raytrace[quality]}\nwait\n")
+        else:
+            for i in list(range(number_of_rotations)):
+                chi_com_file.write(f"window\ncopy file {image_base}{i+1}.png png supersample ")
+                chi_com_file.write(f"{supersample} {image_raytrace[quality]}\nturn y {360/number_of_rotations}\nwait\n")
 
     elif make_movie == True: ### Make a movie of the rotation.
         chi_com_file.write(f"movie record {raytrace_true[quality]}\n")

@@ -1,6 +1,13 @@
 import matplotlib.pyplot as plt
 import glob
 import numpy as np
+def parse_RMSF_file(rmsf_file: str):
+    if glob.glob(rmsf_file):
+        return np.genfromtxt(rmsf_file,skip_header=1,usecols=1,dtype=float)
+    else:
+        print("File not found: ",rmsf_file)
+        return None        
+
 def rmsf(temp_rmsf_array,ax=None,title="",plotrange=0,num_res=0,barcolor="blue",threshold=0):
     """
     description
@@ -22,19 +29,20 @@ def rmsf(temp_rmsf_array,ax=None,title="",plotrange=0,num_res=0,barcolor="blue",
     -------
     None
     """
-    rmsf_array = temp_rmsf_array.copy()
+    
+    if type(temp_rmsf_array) == str:
+            if glob.glob(temp_rmsf_array):
+                data = np.genfromtxt(temp_rmsf_array,skip_header=1,usecols=1,dtype=float)
+            else:
+                print("File not found: " + temp_rmsf_array)
+                return
+    elif type(temp_rmsf_array) != str:
+        data = temp_rmsf_array.copy()
+    
     if ax == None:
         ax = plt.gca()
     if plotrange != 0:
         ax.set_ylim(0,plotrange)
-    if type(rmsf_array) == str:
-        if glob.glob(rmsf_array):
-            data = np.genfromtxt(rmsf_array,skip_header=1,usecols=1,dtype=float)
-        else:
-            print("File not found: " + rmsf_array)
-            return
-    elif type(rmsf_array) != str:
-        data = rmsf_array
     if num_res != 0:
         data = data[:num_res]
     ax.set_title(title)

@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import glob
 import numpy as np
+
+def parse_corr_file(corrfile):
+    return np.genfromtxt(corrfile)
+
 def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement"):
     """
     matplotlib-based function to put correlation matrix plots into subplots.

@@ -4,6 +4,53 @@ import numpy as np
 import prody as prd
 import glob
 
+def parse_normal_modes(filename):
+    if not glob.glob(filename):
+        print("File not found: " + filename)
+        return
+    NMA_data,Atom_Group = prd.parseNMD(filename)
+    del Atom_Group
+    eigens = NMA_data.getEigvals()
+    scales = []
+    temp = open(filename)
+    lines = temp.readlines()
+    temp.close()
+    for line in lines:
+        if 'mode' in line[:5]:
+            scales.append(float(line.split()[:3][-1]))
+    dataset = []
+    for i in range(len(scales)):
+        dataset.append([np.linalg.norm(NMA_data.getEigvecs()[:,i][n:n+3])*scales[i]*eigens[i] for n in range(0, len(NMA_data.getEigvecs()[:,i]), 3)])
+    return scales, dataset, eigens
+
+    
+def Plot_Total_Contributions_Normal_Modes(nmdfile,ax=None,title=""):
+    if ax == None:
+        ax = plt.gca()
+    scales,dataset,eigens = parse_normal_modes(nmdfile)
+    sums=[]
+    for i in range(len(eigens)):
+        sums.append(sum(eigens[:i])
+#                     /sum(eigens)
+                   )
+#     ax.plot(sums,marker="",color="grey",alpha=0.5)
+    x = np.arange(1,100,1)
+    ax.plot(x[:10],eigens[:10]/sum(eigens),
+           marker=".",
+           color="blue")
+    ax.set_xlabel("Mode")
+    ax.set_ylabel(title)
+    ax.set_xlim(1,10)
+    ax.set_ylim(0,1)
+    ax.tick_params(axis='both', which='major', labelsize=10)
+    ax.tick_params(axis='both', which='minor', labelsize=8)
+#     ax.axes.yaxis.set_visible(False)
+    ax.set_yticks([0,.5,1.0])
+    ax.set_yticklabels(["0%","50%","100%"])
+    ax.set_xticks(x[:10])
+    print(sum(eigens[:2])/sum(eigens))
+
+
 def plot_normal_modes(filename,ax=None,title="",num_of_modes=4,colormap="viridis"):
     """
     Plots a line plot of the first N largest modes (default=4) from a given NMD file.
@@ -49,6 +96,13 @@ def plot_normal_modes(filename,ax=None,title="",num_of_modes=4,colormap="viridis
     plt.xticks(rotation=90)
     return
 
+def parsePCA(filename):
+    data = np.genfromtxt(filename,delimiter=None,skip_header=9)
+    area = np.pi * (2)**2
+    x = data[0,2] * data[0,3:]
+    y = data[1,2] * data[1,3:]
+    return x,y
+
 def plot_PCA_from_NMD(filename,ax=None,title="",plot_range=None,colormap="viridis"):
     """
     Plots the first two normal modes against each other as a scatter plot.
@@ -77,7 +131,7 @@ def plot_PCA_from_NMD(filename,ax=None,title="",plot_range=None,colormap="viridi
     area = np.pi * (2)**2
     x = data[0,2] * data[0,3:]
     y = data[1,2] * data[1,3:]
-    z = -(-x**2 - y**2)
+    z = np.linspace(0,1,len(data[1,3:]))
     ax.set_title(title)
     ax.set_xlabel("Mode 1")
     ax.set_ylabel("Mode 2")
