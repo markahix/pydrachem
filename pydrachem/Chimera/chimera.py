@@ -79,10 +79,9 @@ def Chimera_Compare(pdbs:list,
     chicom.close()
     os.system("chimera --gui compare.com; rm compare.com")
 
-
 def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_movie=False,
                           colormap="viridis",hide_atom_mask=":1-10000",keep_files=True,
-                          value_max=1,value_min=-1,quality=0,extra_commands=""):
+                          value_max=1,value_min=-1,quality=0,extra_commands="",recipient="residues"):
     ### Adjust parameters based on quality variable, 0 is default for testing, 
     ### 1-3 for larger images, 2 and 3 use raytracing 
     if quality>4:
@@ -94,7 +93,7 @@ def Chimera_Overlay_Image(pdbfile,array,image_base,number_of_rotations=6,make_mo
     
     
     ### Generate the Chimera-compatible attribute file
-    attribute_to_residues(array,f"{image_base}.dat","temp_att","temporary attribute")
+    attribute_to_residues(array,f"{image_base}.dat","temp_att","temporary attribute",recipient=recipient)
     
     ### Get colormaps and convert to strings for use in Chimera command file.
     hex_mapping = fragment_map_to_hex(colormap,7)

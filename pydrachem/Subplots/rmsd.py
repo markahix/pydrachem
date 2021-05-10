@@ -2,6 +2,15 @@ import matplotlib.pyplot as plt
 import glob
 import numpy as np
 from scipy.ndimage import gaussian_filter
+
+def parse_RMSD_file(filename):
+    if glob.glob(filename):
+        data = np.genfromtxt(filename,skip_header=1,usecols=1)
+        return data
+    else:
+        print("File not found.")
+        return
+
 def rmsd(filename,ax=None,title="",steps_per_ns=100,linecolor="blue",minmax=(0,6)):
     """
     Plots a single RMSD with smoothing function overlaid on raw data.

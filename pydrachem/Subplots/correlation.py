@@ -5,7 +5,7 @@ import numpy as np
 def parse_corr_file(corrfile):
     return np.genfromtxt(corrfile)
 
-def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement"):
+def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement",fontsize="10"):
     """
     matplotlib-based function to put correlation matrix plots into subplots.
     Parameters
@@ -22,8 +22,8 @@ def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement"):
     """
     if ax == None:
         ax = plt.gca()
-    ax.set_xlabel("Residue Number")
-    ax.set_ylabel("Residue Number")
+    ax.set_xlabel("Residue Number",fontsize)
+    ax.set_ylabel("Residue Number",fontsize)
     if type(corrfile) == str:
         if glob.glob(corrfile):
             data = np.genfromtxt(corrfile)
