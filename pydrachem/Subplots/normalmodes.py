@@ -22,7 +22,7 @@ def parse_normal_modes(filename):
         dataset.append([np.linalg.norm(NMA_data.getEigvecs()[:,i][n:n+3])*scales[i]*eigens[i] for n in range(0, len(NMA_data.getEigvecs()[:,i]), 3)])
     return scales, dataset, eigens
   
-def Plot_Total_Contributions_Normal_Modes(nmdfile,ax=None,title=""):
+def Plot_Total_Contributions_Normal_Modes(nmdfile,ax=None,title="",linecolor="blue"):
     if ax == None:
         ax = plt.gca()
     scales,dataset,eigens = parse_normal_modes(nmdfile)
@@ -32,7 +32,7 @@ def Plot_Total_Contributions_Normal_Modes(nmdfile,ax=None,title=""):
     x = np.arange(1,100,1)
     ax.plot(x[:10],eigens[:10]/sum(eigens),
            marker=".",
-           color="blue")
+           color=linecolor)
     ax.set_xlabel("Mode")
     ax.set_ylabel(title)
     ax.set_xlim(1,10)
@@ -43,7 +43,7 @@ def Plot_Total_Contributions_Normal_Modes(nmdfile,ax=None,title=""):
     ax.set_yticklabels(["0%","50%","100%"])
     ax.set_xticks(x[:10])
 
-def plot_normal_modes(filename,ax=None,title="",num_of_modes=4,colormap="viridis"):
+def plot_normal_modes(filename,ax=None,title="",num_of_modes=4,colormap="viridis",plot_type="plot"):
     """
     Plots a line plot of the first N largest modes (default=4) from a given NMD file.
     Parameters
@@ -81,7 +81,10 @@ def plot_normal_modes(filename,ax=None,title="",num_of_modes=4,colormap="viridis
     color_range=np.linspace(0,1,num_of_modes)
     for i in range(num_of_modes):
         dataset = [np.linalg.norm(NMA_data.getEigvecs()[:,i][n:n+3])*scales[i]*eigens[i] for n in range(0, len(NMA_data.getEigvecs()[:,i]), 3)]
-        ax.plot(dataset,label="Mode "+str(i+1),color=cmap(color_range[i]))
+        if plot_type=="bar":
+            ax.bar(np.arange(1,len(dataset)+1),dataset,width=1,align="center",color=cmap(color_range[i]))
+        else:
+            ax.plot(dataset,label="Mode "+str(i+1),color=cmap(color_range[i]))
     ax.set_title(title)
     ax.legend()
     ax.set_xlim(0,len(dataset))
@@ -153,25 +156,28 @@ class NormalModeData():
         ax.scatter(self.x,self.y,marker='o', s=area, zorder=10, alpha=0.4, c=self.z, edgecolors = 'black', cmap=colormap)
         plt.xticks(rotation=90)
         return
-    def plot_modes(self,ax=None,title="",n_modes=4,colormap="viridis"):
+    def plot_modes(self,ax=None,title="",n_modes=4,colormap="viridis",plot_type="plot"):
         if ax == None:
             ax = plt.gca()
         cmap = cm.get_cmap(colormap)
         color_range=np.linspace(0,1,n_modes)
         for i in range(n_modes):
-            ax.plot(self.dataset[i],label="Mode "+str(i+1),color=cmap(color_range[i]))
+            if plot_type=="bar":
+                ax.bar(np.arange(1,len(self.dataset[i])+1),self.dataset[i],width=1,align="center",color=cmap(color_range[i]))
+            else:
+                ax.plot(self.dataset[i],label="Mode "+str(i+1),color=cmap(color_range[i]))
         ax.set_title(title)
         ax.legend()
         ax.set_xlim(0,len(self.dataset[0]))
         plt.xticks(rotation=90)
         return
-    def contributions(self,ax=None,title=""):
+    def contributions(self,ax=None,title="",linecolor="blue",fontsize=10):
         if ax == None:
             ax = plt.gca()
         x = np.arange(1,len(self.eigens)+1,1)
         ax.plot(x,self.eigens/sum(self.eigens),
             marker=".",
-            color="blue")
+            color=linecolor)
         ax.set_xlabel("Mode")
         ax.set_ylabel(title)
         ax.set_xlim(1,len(self.eigens))

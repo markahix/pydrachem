@@ -10,6 +10,7 @@ from .Parsers import *
 from .Chimera import *
 from .WaterWire import *
 from .MolecularDynamics import *
+from .TopMod import *
 # Handle versioneer
 from ._version import get_versions
 versions = get_versions()

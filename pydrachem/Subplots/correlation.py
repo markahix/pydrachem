@@ -22,8 +22,8 @@ def correlation(corrfile,ax=None,colormap="RdBu",title="Correlated Movement",fon
     """
     if ax == None:
         ax = plt.gca()
-    ax.set_xlabel("Residue Number",fontsize)
-    ax.set_ylabel("Residue Number",fontsize)
+    ax.set_xlabel("Residue Number",fontsize=fontsize)
+    ax.set_ylabel("Residue Number",fontsize=fontsize)
     if type(corrfile) == str:
         if glob.glob(corrfile):
             data = np.genfromtxt(corrfile)
